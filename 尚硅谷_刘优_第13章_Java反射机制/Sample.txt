@@ -1,0 +1,116 @@
+导工程
+设置JDK,以及编译版本
+导入JUnit4
+
+之前常用类的复习,再加深一下SimpleDateFormat的使用
+
+
+interface ClothFactory {
+	public void productCloth();
+}
+
+class NikeClothFactory implements ClothFactory {
+	public void productCloth() {
+		System.out.println("耐克衣服,质量好,价格也贵");
+	}
+}
+
+class ClothFactoryProxy implements ClothFactory {
+	ClothFactory cf;
+	
+	public ClothFactoryProxy(ClothFactory cf) {
+		this.cf = cf
+	}
+	
+	public void productCloth() {
+		System.out.println("开始代理方法,收取代理费1000元");
+		cf.productCloth();
+	}
+}
+
+package com.atguigu.proxy;
+
+//静态代理,代理什么事项需要创建为接口
+interface HouseBuilder {
+	public void buildHouse();
+}
+
+class WanKeHouseBuilder implements HouseBuilder {
+
+	@Override
+	public void buildHouse() {
+		System.out.println("万科开发建设,品质保证");
+	}
+	
+}
+
+class HouseBuilerProxy implements HouseBuilder {
+	
+	HouseBuilder hb;
+	public void setRealBuider(HouseBuilder hb) {
+		this.hb = hb;
+	}
+	@Override
+	public void buildHouse() {
+		System.out.println("代理类要工作,收取代理费200000");
+		hb.buildHouse();
+	}
+	
+	
+}
+
+public class StaticProxyTest {
+	
+	public static void main(String[] args) {
+		HouseBuilder hb = new WanKeHouseBuilder();
+		HouseBuilerProxy proxy = new HouseBuilerProxy();
+		proxy.setRealBuider(hb);
+		
+		proxy.buildHouse();
+	}
+}
+
+interface PhoneFactory {
+	public void producPhone();
+}
+
+class AppleComany implements PhoneFactory {
+
+	@Override
+	public void producPhone() {
+		System.out.println("苹果手机来了,你的肾准备好了吗?");
+	}
+	
+}
+
+class MyInvocationHandler implements InvocationHandler {
+	
+	Object targetObject;
+	//通过这个方法返回一个被代理对象的真实的代理对象
+	public Object blind(Object targetObject) {
+		this.targetObject = targetObject;
+		Class clazz = targetObject.getClass();
+		return Proxy.newProxyInstance(clazz.getClassLoader(), clazz.getInterfaces(), this);
+	}
+	
+	@Override
+	public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		// TODO Auto-generated method stub
+		return method.invoke(targetObject, args);
+	}
+	
+}
+
+public class ProxtyTest {
+	public static void main(String[] args) {
+		PhoneFactory factory = new AppleComany();
+		MyInvocationHandler mih = new MyInvocationHandler();
+		Object proxy = mih.blind(factory);
+		PhoneFactory factoryProxy = (PhoneFactory)proxy;
+		factoryProxy.producPhone();
+		
+		HouseBuilder hb = (HouseBuilder)mih.blind(new WanKeHouseBuilder());
+		hb.buildHouse();
+	}
+	
+}
